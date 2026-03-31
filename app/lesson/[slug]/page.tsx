@@ -3,6 +3,11 @@ import { getLesson } from "@/data/lessons";
 import { FunctionSyntaxBox } from "@/components/lesson/FunctionSyntaxBox";
 import { LessonMiniQuiz } from "@/components/lesson/LessonMiniQuiz";
 import { StepByStep } from "@/components/lesson/StepByStep";
+import { getAllTopicSlugs } from "@/lib/staticPaths";
+
+export function generateStaticParams() {
+  return getAllTopicSlugs();
+}
 
 export default async function Page({
   params

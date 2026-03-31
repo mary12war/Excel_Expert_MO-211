@@ -1,3 +1,9 @@
+import { getAllDomainSlugs } from "@/lib/staticPaths";
+
+export function generateStaticParams() {
+  return getAllDomainSlugs();
+}
+
 export default async function Page({
   params
 }: {

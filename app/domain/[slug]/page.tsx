@@ -1,6 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getDomainBySlug } from "@/data/domains";
+import { getAllDomainSlugs } from "@/lib/staticPaths";
+
+export function generateStaticParams() {
+  return getAllDomainSlugs();
+}
 
 export default async function Page({
   params
