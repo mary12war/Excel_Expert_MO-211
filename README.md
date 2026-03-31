@@ -33,6 +33,8 @@ npm run dev
 | `npm run start`| Run production build |
 | `npm run lint` | ESLint               |
 
+The GitHub Actions workflow uses **Node.js 24** and current action versions to match GitHub’s [Node 20 deprecation](https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/) on `ubuntu-latest`.
+
 ## License
 
 Proprietary — [all rights reserved](./LICENSE). Replace the copyright name in `LICENSE` if you publish under a different person or organization.
