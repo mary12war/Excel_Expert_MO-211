@@ -4,6 +4,12 @@ import * as React from "react";
 import Link from "next/link";
 import { getExercises } from "@/data/exercises";
 import type { PracticeExercise } from "@/data/exercises/types";
+import { getDomain1Checklist } from "@/data/exercises/domain1-checklist";
+import { getDomain2Checklist } from "@/data/exercises/domain2-checklist";
+import { getDomain4Checklist } from "@/data/exercises/domain4-checklist";
+import { getDomainSlugForTopicSlug } from "@/data/domains";
+import { ScenarioChecklistPractice } from "@/components/practice/ScenarioChecklistPractice";
+import { getScenarioPracticeIntro } from "@/lib/scenarioPracticeIntro";
 import { SpreadsheetGrid } from "@/components/practice/SpreadsheetGrid";
 import { FormulaBar } from "@/components/practice/FormulaBar";
 import { TaskPanel } from "@/components/practice/TaskPanel";
@@ -27,6 +33,22 @@ function ensureRectangular(data: CellValue[][]) {
 }
 
 export function PracticeClient({ slug }: { slug: string }) {
+  const domainSlug = getDomainSlugForTopicSlug(slug);
+  const scenarioTasks =
+    getDomain1Checklist(slug) ??
+    getDomain2Checklist(slug) ??
+    getDomain4Checklist(slug);
+
+  if (scenarioTasks?.length && domainSlug) {
+    return (
+      <ScenarioChecklistPractice
+        topicSlug={slug}
+        tasks={scenarioTasks}
+        intro={getScenarioPracticeIntro(domainSlug)}
+      />
+    );
+  }
+
   const exercises = getExercises(slug);
   const [exerciseIdx, setExerciseIdx] = React.useState(0);
   const exercise = exercises[exerciseIdx] as PracticeExercise | undefined;

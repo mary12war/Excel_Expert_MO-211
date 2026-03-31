@@ -4,12 +4,13 @@ import * as React from "react";
 import type { QuizQuestion, DomainSlug } from "@/data/quiz-questions/types";
 import { questionBank } from "@/data/quiz-questions/fullExam";
 import { examDomains } from "@/data/domains";
+import { shuffle } from "@/lib/shuffle";
 import { cn } from "@/lib/utils";
 
 type ExamState = {
   startedAt: number | null;
   durationSeconds: number;
-  questionIds: string[];
+  questionSet: QuizQuestion[] | null;
   answers: Record<string, string>;
   finished: boolean;
 };
@@ -18,9 +19,10 @@ function domainTitle(slug: DomainSlug) {
   return examDomains.find((d) => d.slug === slug)?.title ?? slug;
 }
 
-function weightedSample50(bank: QuizQuestion[]) {
-  // Simple starter sampler: try to balance across domains roughly by weights.
-  // (Bank is small right now; this will repeat as needed until bank expands.)
+/**
+ * MO-211-style mix: unique questions only, weighted counts per domain, then shuffled order.
+ */
+function weightedSample50(bank: QuizQuestion[]): QuizQuestion[] {
   const targets: { domain: DomainSlug; count: number }[] = [
     { domain: "manage-workbook-options-and-settings", count: 6 },
     { domain: "manage-and-format-data", count: 17 },
@@ -36,14 +38,30 @@ function weightedSample50(bank: QuizQuestion[]) {
   }
 
   const picked: QuizQuestion[] = [];
+  const seenIds = new Set<string>();
+
   for (const t of targets) {
-    const pool = byDomain.get(t.domain) ?? [];
-    if (pool.length === 0) continue;
-    for (let i = 0; i < t.count; i++) {
-      picked.push(pool[i % pool.length]);
+    const pool = shuffle(byDomain.get(t.domain) ?? []);
+    let need = t.count;
+    for (const q of pool) {
+      if (need === 0) break;
+      if (seenIds.has(q.id)) continue;
+      seenIds.add(q.id);
+      picked.push(q);
+      need--;
     }
   }
-  return picked.slice(0, 50);
+
+  if (picked.length < 50) {
+    const rest = shuffle(bank.filter((q) => !seenIds.has(q.id)));
+    for (const q of rest) {
+      if (picked.length >= 50) break;
+      seenIds.add(q.id);
+      picked.push(q);
+    }
+  }
+
+  return shuffle(picked.slice(0, 50));
 }
 
 function formatTime(s: number) {
@@ -53,40 +71,52 @@ function formatTime(s: number) {
 }
 
 export function FullExamClient() {
-  const questions = React.useMemo(() => weightedSample50(questionBank), []);
   const [idx, setIdx] = React.useState(0);
+  const [tick, setTick] = React.useState(0);
 
-  const [state, setState] = React.useState<ExamState>(() => ({
+  const [state, setState] = React.useState<ExamState>({
     startedAt: null,
     durationSeconds: 50 * 60,
-    questionIds: questions.map((q) => q.id),
+    questionSet: null,
     answers: {},
     finished: false
-  }));
+  });
 
-  const now = Date.now();
-  const elapsed = state.startedAt ? Math.floor((now - state.startedAt) / 1000) : 0;
+  const questions = state.questionSet ?? [];
+
+  const elapsed = React.useMemo(() => {
+    if (state.startedAt == null) return 0;
+    return Math.floor((Date.now() - state.startedAt) / 1000);
+  }, [state.startedAt, tick]);
+
   const remaining = Math.max(0, state.durationSeconds - elapsed);
 
   React.useEffect(() => {
-    if (!state.startedAt || state.finished) return;
+    if (state.startedAt == null || state.finished) return;
+    const id = window.setInterval(() => setTick((t) => t + 1), 1000);
+    return () => window.clearInterval(id);
+  }, [state.startedAt, state.finished]);
+
+  React.useEffect(() => {
+    if (state.startedAt == null || state.finished) return;
     if (remaining <= 0) {
       setState((s) => ({ ...s, finished: true }));
     }
-    const t = window.setInterval(() => {
-      // trigger re-render for countdown
-      setIdx((i) => i);
-    }, 250);
-    return () => window.clearInterval(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.startedAt, state.finished]);
+  }, [state.startedAt, state.finished, remaining]);
 
   const current = questions[idx];
   const selected = current ? state.answers[current.id] : undefined;
 
   const startExam = () => {
-    setState((s) => ({ ...s, startedAt: Date.now(), finished: false, answers: {} }));
+    setState({
+      startedAt: Date.now(),
+      durationSeconds: 50 * 60,
+      questionSet: weightedSample50(questionBank),
+      answers: {},
+      finished: false
+    });
     setIdx(0);
+    setTick(0);
   };
 
   const finish = () => setState((s) => ({ ...s, finished: true }));
@@ -96,7 +126,7 @@ export function FullExamClient() {
     const byDomain: Record<string, { correct: number; total: number }> = {};
     for (const q of questions) {
       const a = state.answers[q.id];
-      const isCorrect = a && a === q.answerId;
+      const isCorrect = Boolean(a && a === q.answerId);
       if (isCorrect) correct++;
       const k = q.domainSlug;
       byDomain[k] = byDomain[k] ?? { correct: 0, total: 0 };
@@ -110,7 +140,7 @@ export function FullExamClient() {
 
   const pass = score.estimatedScore >= 700;
 
-  if (!state.startedAt) {
+  if (state.startedAt == null) {
     return (
       <div className="rounded-2xl border bg-card p-6">
         <div className="text-xs font-medium text-muted-foreground">Full Mock Exam</div>
@@ -118,7 +148,7 @@ export function FullExamClient() {
           Full exam simulation
         </h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          50 questions • 50 minutes • weighted across the 4 MO-211 domains.
+          50 unique questions • 50 minutes • weighted across the 4 MO-211 domains.
         </p>
         <div className="mt-5 flex flex-wrap gap-2">
           <button
@@ -131,9 +161,6 @@ export function FullExamClient() {
           <div className="rounded-lg border bg-muted/30 px-4 py-2 text-sm text-muted-foreground">
             No hints • No instant feedback
           </div>
-        </div>
-        <div className="mt-6 text-xs text-muted-foreground">
-          Note: question bank is being expanded; early versions may repeat question styles.
         </div>
       </div>
     );
@@ -163,7 +190,15 @@ export function FullExamClient() {
             </button>
             <button
               type="button"
-              onClick={() => setState((s) => ({ ...s, startedAt: null }))}
+              onClick={() =>
+                setState({
+                  startedAt: null,
+                  durationSeconds: 50 * 60,
+                  questionSet: null,
+                  answers: {},
+                  finished: false
+                })
+              }
               className="rounded-lg border bg-background px-4 py-2 text-sm font-medium hover:bg-muted"
             >
               Exit
@@ -194,6 +229,14 @@ export function FullExamClient() {
             })}
           </div>
         </div>
+      </div>
+    );
+  }
+
+  if (!current || questions.length === 0) {
+    return (
+      <div className="rounded-2xl border bg-card p-6 text-sm text-muted-foreground">
+        Loading exam…
       </div>
     );
   }
@@ -274,4 +317,3 @@ export function FullExamClient() {
     </div>
   );
 }
-

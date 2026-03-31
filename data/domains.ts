@@ -352,3 +352,28 @@ export function getDomainBySlug(slug: string) {
   return examDomains.find((d) => d.slug === slug);
 }
 
+/** Which exam domain a topic slug belongs to (undefined if not found). */
+export function getDomainSlugForTopicSlug(topicSlug: string): string | undefined {
+  for (const d of examDomains) {
+    for (const t of d.topics) {
+      for (const s of t.subtopics) {
+        if (s.topicSlug === topicSlug) return d.slug;
+      }
+    }
+  }
+  return undefined;
+}
+
+export function getSubtopicBySlug(topicSlug: string) {
+  for (const d of examDomains) {
+    for (const t of d.topics) {
+      for (const s of t.subtopics) {
+        if (s.topicSlug === topicSlug) {
+          return { domain: d, topicGroup: t, subtopic: s };
+        }
+      }
+    }
+  }
+  return undefined;
+}
+
