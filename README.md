@@ -11,7 +11,7 @@ Interactive study site for the **Microsoft Office Specialist (MOS) Excel Expert 
 2) Install deps:
 
 ```powershell
-cd "C:\Users\IT Teacher\Documents\11 - MO211 EXCEL EXPERT\Excel Expert Web"
+cd PATH
 npm install
 ```
 
