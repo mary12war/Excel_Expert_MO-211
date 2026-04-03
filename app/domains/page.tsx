@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { DomainProgressBar } from "@/components/progress/DomainProgressBar";
 import { examDomains } from "@/data/domains";
 
 export default function Page() {
@@ -30,12 +31,7 @@ export default function Page() {
                 {d.weight}
               </div>
             </div>
-            <div className="mt-5 h-2 w-full overflow-hidden rounded-full bg-muted">
-              <div className="h-2 w-[5%] rounded-full bg-excel-600" />
-            </div>
-            <div className="mt-2 text-xs text-muted-foreground">
-              Progress UI will populate once tracking is connected.
-            </div>
+            <DomainProgressBar domainSlug={d.slug} />
           </Link>
         ))}
       </div>

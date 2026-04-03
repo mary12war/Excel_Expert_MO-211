@@ -6,6 +6,7 @@ import { questionBank } from "@/data/quiz-questions/fullExam";
 import { examDomains } from "@/data/domains";
 import { shuffle } from "@/lib/shuffle";
 import { cn } from "@/lib/utils";
+import { useProgressStore } from "@/stores/progress-store";
 
 type ExamState = {
   startedAt: number | null;
@@ -73,6 +74,7 @@ function formatTime(s: number) {
 export function FullExamClient() {
   const [idx, setIdx] = React.useState(0);
   const [tick, setTick] = React.useState(0);
+  const lastLoggedStartRef = React.useRef<number | null>(null);
 
   const [state, setState] = React.useState<ExamState>({
     startedAt: null,
@@ -139,6 +141,24 @@ export function FullExamClient() {
   }, [questions, state.answers]);
 
   const pass = score.estimatedScore >= 700;
+
+  React.useEffect(() => {
+    if (!state.finished || state.startedAt == null || questions.length === 0) return;
+    if (lastLoggedStartRef.current === state.startedAt) return;
+    lastLoggedStartRef.current = state.startedAt;
+    useProgressStore.getState().recordFullExamAttempt({
+      correct: score.correct,
+      total: score.total,
+      estimatedScore: score.estimatedScore
+    });
+  }, [
+    state.finished,
+    state.startedAt,
+    questions.length,
+    score.correct,
+    score.total,
+    score.estimatedScore
+  ]);
 
   if (state.startedAt == null) {
     return (

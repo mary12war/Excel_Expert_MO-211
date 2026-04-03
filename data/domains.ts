@@ -377,3 +377,34 @@ export function getSubtopicBySlug(topicSlug: string) {
   return undefined;
 }
 
+/** Flat index for search: every MO-211 objective skill (subtopic). */
+export type Mo211SkillSearchRow = {
+  topicSlug: string;
+  title: string;
+  domainSlug: string;
+  domainTitle: string;
+  topicGroupTitle: string;
+};
+
+let mo211SkillSearchRows: Mo211SkillSearchRow[] | null = null;
+
+export function getMo211SkillSearchRows(): Mo211SkillSearchRow[] {
+  if (mo211SkillSearchRows) return mo211SkillSearchRows;
+  const rows: Mo211SkillSearchRow[] = [];
+  for (const d of examDomains) {
+    for (const t of d.topics) {
+      for (const s of t.subtopics) {
+        rows.push({
+          topicSlug: s.topicSlug,
+          title: s.title,
+          domainSlug: d.slug,
+          domainTitle: d.title,
+          topicGroupTitle: t.title
+        });
+      }
+    }
+  }
+  mo211SkillSearchRows = rows;
+  return rows;
+}
+

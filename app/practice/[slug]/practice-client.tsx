@@ -16,6 +16,7 @@ import { TaskPanel } from "@/components/practice/TaskPanel";
 import { HintSystem } from "@/components/practice/HintSystem";
 import { parseA1, toA1 } from "@/lib/cellAddress";
 import { validateFormulaPattern } from "@/lib/formulaValidator";
+import { useProgressStore } from "@/stores/progress-store";
 
 type CellValue = string | number | null;
 
@@ -149,6 +150,11 @@ export function PracticeClient({ slug }: { slug: string }) {
       const r = validateFormulaPattern(v, exercise.expectedFormulaPattern);
       if (r.ok) {
         setFeedback({ type: "success", message: r.message });
+        useProgressStore.getState().recordExerciseSuccess(
+          slug,
+          exercise.id,
+          exercises.map((e) => e.id)
+        );
       } else {
         setFeedback({
           type: "error",
@@ -162,6 +168,11 @@ export function PracticeClient({ slug }: { slug: string }) {
     if (exercise.expectedValue !== undefined) {
       if (String(v).trim() === String(exercise.expectedValue).trim()) {
         setFeedback({ type: "success", message: "Value matches expected output." });
+        useProgressStore.getState().recordExerciseSuccess(
+          slug,
+          exercise.id,
+          exercises.map((e) => e.id)
+        );
       } else {
         setFeedback({
           type: "error",

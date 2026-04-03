@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { ScenarioChecklistTask } from "@/data/exercises/checklist-types";
 import { getSubtopicBySlug } from "@/data/domains";
 import { cn } from "@/lib/utils";
+import { useProgressStore } from "@/stores/progress-store";
 
 type Answer = "yes" | "no";
 
@@ -30,7 +31,13 @@ export function ScenarioChecklistPractice({
     setChecked(false);
   };
 
-  const onCheck = () => setChecked(true);
+  const onCheck = () => {
+    const allCorrect = tasks.every(
+      (t) => answers[t.id] !== undefined && answers[t.id] === t.correct
+    );
+    setChecked(true);
+    if (allCorrect) useProgressStore.getState().markScenarioPracticeComplete(topicSlug);
+  };
   const onReset = () => {
     setAnswers({});
     setChecked(false);

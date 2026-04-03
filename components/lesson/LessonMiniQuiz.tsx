@@ -3,12 +3,26 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import type { LessonContent } from "@/data/lessons/types";
+import { useProgressStore } from "@/stores/progress-store";
 
 type QuickItem = LessonContent["quickCheck"][number];
 
-export function LessonMiniQuiz({ items }: { items: QuickItem[] }) {
+export function LessonMiniQuiz({
+  items,
+  topicSlug
+}: {
+  items: QuickItem[];
+  topicSlug: string;
+}) {
   const [selected, setSelected] = React.useState<Record<number, string>>({});
   const [revealed, setRevealed] = React.useState<Record<number, boolean>>({});
+  const [mastered, setMastered] = React.useState<Record<number, boolean>>({});
+
+  React.useEffect(() => {
+    if (items.length === 0) return;
+    const all = items.every((_, i) => mastered[i]);
+    if (all) useProgressStore.getState().markLessonComplete(topicSlug);
+  }, [items.length, mastered, topicSlug]);
 
   return (
     <section id="quiz" className="rounded-2xl border bg-card">
@@ -64,7 +78,12 @@ export function LessonMiniQuiz({ items }: { items: QuickItem[] }) {
               <div className="mt-4 flex flex-wrap items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => setRevealed((r) => ({ ...r, [idx]: true }))}
+                  onClick={() => {
+                    const correct = choice === q.answerId;
+                    useProgressStore.getState().recordMiniQuizOutcome(topicSlug, correct);
+                    setRevealed((r) => ({ ...r, [idx]: true }));
+                    if (correct) setMastered((m) => ({ ...m, [idx]: true }));
+                  }}
                   disabled={showResult || !choice}
                   className={cn(
                     "rounded-lg bg-excel-600 px-4 py-2 text-sm font-medium text-white",
@@ -84,6 +103,11 @@ export function LessonMiniQuiz({ items }: { items: QuickItem[] }) {
                       });
                       setSelected((s) => {
                         const next = { ...s };
+                        delete next[idx];
+                        return next;
+                      });
+                      setMastered((m) => {
+                        const next = { ...m };
                         delete next[idx];
                         return next;
                       });

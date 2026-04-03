@@ -135,7 +135,7 @@ export default async function Page({
         </div>
       </section>
 
-      <LessonMiniQuiz items={lesson.quickCheck} />
+      <LessonMiniQuiz items={lesson.quickCheck} topicSlug={slug} />
     </div>
   );
 }

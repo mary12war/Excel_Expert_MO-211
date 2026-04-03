@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { DomainProgressBar } from "@/components/progress/DomainProgressBar";
 import { examDomains } from "@/data/domains";
 
 export default function Page() {
@@ -49,12 +50,7 @@ export default function Page() {
             <div className="mt-3 text-xs text-muted-foreground">
               {d.topics.reduce((acc, t) => acc + t.subtopics.length, 0)} skills
             </div>
-            <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-muted">
-              <div className="h-2 w-[5%] rounded-full bg-excel-600" />
-            </div>
-            <div className="mt-2 text-xs text-muted-foreground">
-              Progress tracking will appear here once enabled.
-            </div>
+            <DomainProgressBar domainSlug={d.slug} />
           </Link>
         ))}
       </section>

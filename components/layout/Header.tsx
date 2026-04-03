@@ -1,10 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Search, Sun, Moon } from "lucide-react";
+import { Sun, Moon } from "lucide-react";
+import { Mo211TopicSearchHeader } from "@/components/search/Mo211TopicSearch";
 import { useTheme } from "next-themes";
-import { cn } from "@/lib/utils";
 
 function TitleForPath(pathname: string) {
   if (pathname === "/") return "Dashboard";
@@ -12,6 +11,7 @@ function TitleForPath(pathname: string) {
   if (pathname === "/progress") return "Progress";
   if (pathname === "/cheat-sheet") return "Cheat Sheet";
   if (pathname === "/full-exam-simulation") return "Full Exam Simulation";
+  if (pathname === "/search") return "Search skills";
   return "MO-211 Excel Expert";
 }
 
@@ -32,16 +32,7 @@ export function Header() {
         </div>
 
         <div className="flex items-center gap-3">
-          <Link
-            href="/search"
-            className={cn(
-              "inline-flex items-center gap-2 rounded-lg border bg-card px-3 py-2 text-sm",
-              "hover:bg-muted transition-colors"
-            )}
-          >
-            <Search className="h-4 w-4" />
-            <span className="hidden md:inline">Search topics…</span>
-          </Link>
+          <Mo211TopicSearchHeader />
 
           <button
             type="button"
