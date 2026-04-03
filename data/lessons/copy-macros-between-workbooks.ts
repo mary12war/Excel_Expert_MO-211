@@ -72,7 +72,7 @@ export const lessonCopyMacrosBetweenWorkbooks: LessonContent = {
       "Follow the pictures in order. They show the Visual Basic Editor and Project Explorer. You drag a module from the source workbook to the target workbook. Both files must stay open.",
     images: [
       {
-        src: "/lessons/copy-macros-between-workbooks/01-vbe-module.jpg",
+        src: "/public/lessons/copy-macros-between-workbooks/01-vbe-module.jpg",
         alt: "Visual Basic Editor window with Module1 and two macros in Book1",
         caption: "The editor shows your code. Macros live inside a module."
       },
