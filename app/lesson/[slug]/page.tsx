@@ -1,6 +1,8 @@
 import Link from "next/link";
+import Image from "next/image";
 import { getLesson } from "@/data/lessons";
 import { FunctionSyntaxBox } from "@/components/lesson/FunctionSyntaxBox";
+import { cn } from "@/lib/utils";
 import { LessonMiniQuiz } from "@/components/lesson/LessonMiniQuiz";
 import { StepByStep } from "@/components/lesson/StepByStep";
 import { getAllTopicSlugs } from "@/lib/staticPaths";
@@ -70,7 +72,12 @@ export default async function Page({
         </div>
       </div>
 
-      <section className="grid gap-4 lg:grid-cols-2">
+      <section
+        className={cn(
+          "grid gap-4",
+          lesson.hideSyntaxSection ? "lg:grid-cols-1" : "lg:grid-cols-2"
+        )}
+      >
         <div className="rounded-2xl border bg-card p-6">
           <div className="text-sm font-semibold">Concept</div>
           <p className="mt-2 text-sm text-muted-foreground whitespace-pre-line">
@@ -87,20 +94,22 @@ export default async function Page({
           </ul>
         </div>
 
-        {lesson.syntax ? (
-          <FunctionSyntaxBox
-            name={lesson.syntax.functionName}
-            syntax={lesson.syntax.syntax}
-            notes={lesson.syntax.notes}
-          />
-        ) : (
-          <div className="rounded-2xl border bg-muted/30 p-6">
-            <div className="text-sm font-semibold">Syntax</div>
-            <p className="mt-2 text-sm text-muted-foreground">
-              This lesson is a workflow skill rather than a function.
-            </p>
-          </div>
-        )}
+        {!lesson.hideSyntaxSection ? (
+          lesson.syntax ? (
+            <FunctionSyntaxBox
+              name={lesson.syntax.functionName}
+              syntax={lesson.syntax.syntax}
+              notes={lesson.syntax.notes}
+            />
+          ) : (
+            <div className="rounded-2xl border bg-muted/30 p-6">
+              <div className="text-sm font-semibold">Syntax</div>
+              <p className="mt-2 text-sm text-muted-foreground">
+                This lesson is a workflow skill rather than a function.
+              </p>
+            </div>
+          )
+        ) : null}
       </section>
 
       <StepByStep steps={lesson.steps} />
@@ -111,11 +120,49 @@ export default async function Page({
           <p className="mt-2 text-sm text-muted-foreground">
             {lesson.demo.description}
           </p>
-          <div className="mt-4 aspect-video rounded-xl border bg-muted/30" />
-          <div className="mt-2 text-xs text-muted-foreground">
-            Demo media placeholder (we’ll replace with short clips/GIF-style
-            sequences).
-          </div>
+          {lesson.demo.images?.length ? (
+            <div className="mt-4 space-y-4">
+              {lesson.demo.images.map((img) => (
+                <figure key={img.src} className="space-y-2">
+                  <div className="overflow-hidden rounded-xl border bg-muted/20">
+                    <Image
+                      src={img.src}
+                      alt={img.alt}
+                      width={800}
+                      height={500}
+                      className="h-auto w-full"
+                      sizes="(max-width: 1024px) 100vw, 50vw"
+                    />
+                  </div>
+                  {img.caption ? (
+                    <figcaption className="text-xs text-muted-foreground">
+                      {img.caption}
+                    </figcaption>
+                  ) : null}
+                </figure>
+              ))}
+              {lesson.demo.imageSourceUrl && lesson.demo.imageSourceLabel ? (
+                <p className="text-xs text-muted-foreground">
+                  <a
+                    href={lesson.demo.imageSourceUrl}
+                    className="font-medium text-excel-700 underline underline-offset-2 hover:text-excel-800 dark:text-excel-300"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {lesson.demo.imageSourceLabel}
+                  </a>
+                </p>
+              ) : null}
+            </div>
+          ) : (
+            <>
+              <div className="mt-4 aspect-video rounded-xl border bg-muted/30" />
+              <div className="mt-2 text-xs text-muted-foreground">
+                Demo media placeholder (we’ll replace with short clips/GIF-style
+                sequences).
+              </div>
+            </>
+          )}
         </div>
 
         <div className="rounded-2xl border bg-card p-6">

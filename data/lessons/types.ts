@@ -10,6 +10,8 @@ export type LessonContent = {
   summary: string;
   concept: string;
   whenToUse: string[];
+  /** When true, the lesson page omits the Syntax column (full-width concept). */
+  hideSyntaxSection?: boolean;
   syntax?: {
     functionName: string;
     syntax: string;
@@ -19,6 +21,11 @@ export type LessonContent = {
   demo: {
     title: string;
     description: string;
+    /** Static paths under /public, e.g. /lessons/slug/step-1.jpg */
+    images?: { src: string; alt: string; caption?: string }[];
+    /** Optional credit line, e.g. link to source article. */
+    imageSourceUrl?: string;
+    imageSourceLabel?: string;
   };
   realWorldExample: LessonSection;
   commonMistakes: string[];

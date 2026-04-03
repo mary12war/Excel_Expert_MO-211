@@ -4,6 +4,7 @@ import { lessonXLOOKUP } from "./xlookup";
 import { lessonSUMIFS } from "./sumifs";
 import { lessonFILTER } from "./filter";
 import { lessonPMT } from "./pmt";
+import { lessonCopyMacrosBetweenWorkbooks } from "./copy-macros-between-workbooks";
 import { generateDomain3Lessons } from "./auto-domain3";
 import { generateDomain2Lessons } from "./auto-domain2";
 import { generateDomain1Lessons } from "./auto-domain1";
@@ -14,7 +15,8 @@ const baseLessons: Record<string, LessonContent> = {
   [lessonXLOOKUP.slug]: lessonXLOOKUP,
   [lessonSUMIFS.slug]: lessonSUMIFS,
   [lessonFILTER.slug]: lessonFILTER,
-  [lessonPMT.slug]: lessonPMT
+  [lessonPMT.slug]: lessonPMT,
+  [lessonCopyMacrosBetweenWorkbooks.slug]: lessonCopyMacrosBetweenWorkbooks
 };
 
 export const lessonsBySlug: Record<string, LessonContent> = {
